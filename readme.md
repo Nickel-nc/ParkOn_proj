@@ -1,0 +1,3 @@
+Model in work...
+
+<img src="output/output.gif" alt="output example" width="800"/>
