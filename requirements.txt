@@ -7,3 +7,4 @@ flask-ngrok
 matplotlib
 scipy
 skimage
+IPython[all]
