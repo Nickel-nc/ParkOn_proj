@@ -1,6 +1,7 @@
 from pathlib import Path
 import mrcnn.config
 import mrcnn.utils
+import numpy as np
 import os
 
 # Root directory of the project
@@ -19,7 +20,9 @@ OUTPUT_SOURCE = "output/output.mp4"
 OUTPUT_PARAMS = 0
 
 # Manual setting coordinates for parking area
-PARKING_AREA = None
+# full area array: np.array([[275,720], [1320,890], [1345,945], [1134,933], [1110,985], [200,800]])
+PARKING_AREA_PTS = np.array([[620,785], [1320,890], [1345,945], [1134,933], [1110,985], [575,875]])
+SHOW_PARKING_AREA = 1
 # Plots area where model is working
 SHOW_DETECTION_FRAME = 0
 # SKIP_FRAMES = 100
@@ -42,4 +45,5 @@ class MaskRCNNConfig(mrcnn.config.Config):
     IMAGES_PER_GPU = 1
     GPU_COUNT = 1
     NUM_CLASSES = 1 + 80  # COCO dataset has 80 classes + one background class
-    DETECTION_MIN_CONFIDENCE = 0.6
+    DETECTION_MIN_CONFIDENCE = 0.1
+

@@ -33,7 +33,7 @@ model.load_weights(COCO_MODEL_PATH, by_name=True)
 parked_car_boxes = None
 
 # Load the video file we want to run detection on
-video_capture = cv2.VideoCapture(RTSP_SOURCE)
+video_capture = cv2.VideoCapture(RTSP_SOURCE)  # Options: LOCAL_VIDEO_SOURCE, RTSP_SOURCE
 # Sets output with skipped frames
 
 """SKIP FRAME ACTUATE"""
@@ -41,7 +41,7 @@ video_capture = cv2.VideoCapture(RTSP_SOURCE)
 
 # Save the detection result video
 """ACTUATE IMAGE SIZE BY CV2 TOOLS"""
-video_writer = cv2.VideoWriter(OUTPUT_SOURCE, -1, 20.0, FRAME_SIZE)
+# video_writer = cv2.VideoWriter(OUTPUT_SOURCE, -1, 20.0, FRAME_SIZE)
 
 # How many frames of video we've seen in a row with a parking space open
 free_space_frames = 0
@@ -51,7 +51,7 @@ msg_sent = False
 
 # Loop over each frame of video
 while video_capture.isOpened():
-    success, frame = video_capture.read()
+    success, frame = video_capture.read()  # (1080, 1920, 3)
     if not success:
         break
 
@@ -61,10 +61,11 @@ while video_capture.isOpened():
 
     rgb_image = frame[:, :, ::-1]
     # print(frame.shape)
-    print(rgb_image.shape) # (1080, 1920, 3)
+    # print(rgb_image.shape) # (1080, 1920, 3)
 
     """CHOOSE THE WINDOW TO LOOK UP FOR BOXES"""
-    # rgb_image = frame[:500, :600, ::-1]
+
+    # rgb_image = rgb_image[:,:500, ::]
 
     # Run the image through the Mask R-CNN model to get results.
     results = model.detect([rgb_image], verbose=0)
@@ -73,18 +74,29 @@ while video_capture.isOpened():
     # We only passed in one image to detect, so only grab the first result.
     r = results[0]
 
+    # TEST mode of detection frame mask
     if SHOW_DETECTION_FRAME:
         # Draw a top-left and bottom-right coordinates rectangle (BGR) (x1, y1), (x2, y2)
         cv2.rectangle(frame, (X1, Y1), (X2, Y2), (255, 0, 0), 2)
         print(f"Detection operating frame: {X1, X2} {Y1, Y2}")
+
+    # TEST MODE of parking area
+    if SHOW_PARKING_AREA:
+        # Draw a top-left and bottom-right coordinates rectangle (BGR) (x1, y1), (x2, y2)
+        cv2.polylines(frame, [PARKING_AREA_PTS], True, (0, 255, 0), 2)
 
     if parked_car_boxes is None:
         # This is the first frame of video - assume all the cars detected are in parking spaces.
         # Save the location of each car as a parking space box and go to the next frame of video.
         # - r['rois'] are the bounding box of each detected object
         # - r['scores'] are the confidence scores for each detection
+
+        # Auto train car boxes
         parked_car_boxes = get_car_boxes(r['rois'], r['class_ids'])
         print(parked_car_boxes)
+        # parked_car_boxes = PARKING_BOXES
+        # Use car boxes from snippet
+        # print(parked_car_boxes)
     else:
         # We already know where the parking spaces are. Check if any are currently unoccupied.
 
@@ -143,9 +155,12 @@ while video_capture.isOpened():
 
                 msg_sent = True
 
-        video_writer.write(frame)
+        # video_writer.write(frame)
         # Show the frame of video on the screen
+
         cv2.imshow('Video', frame)
+        # cv2.imwrite("image.jpg", frame)  # If you need to save image from video
+
 
     # Hit 'q' to quit
     if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -153,5 +168,5 @@ while video_capture.isOpened():
 
 # Clean up everything when finished
 video_capture.release()
-video_writer.release()
+# video_writer.release()
 cv2.destroyAllWindows()
