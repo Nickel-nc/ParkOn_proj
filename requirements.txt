@@ -8,3 +8,4 @@ matplotlib
 scipy
 skimage
 IPython[all]
+pymongo[srv]
